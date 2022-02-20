@@ -1,0 +1,4 @@
+#!/bin/bash
+program_name="wireguard"
+
+s6-format-filter "%1 %s" "[${program_name}]" | logutil-service /log/"${program_name}"

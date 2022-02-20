@@ -1,0 +1,13 @@
+#!/command/with-contenv sh
+. "/usr/local/bin/logger"
+# ==============================================================================
+# wireguard
+# Bring up wireguard
+# ==============================================================================
+
+echo "Starting wireguard..." | info
+
+fdmove -c 2 1 \
+  /usr/bin/wg-quick up wg0
+
+wait "$(pidof boringtun)"
