@@ -4,7 +4,7 @@ services:
   wireguard:
 #    image: ghcr.io/alexyao2015/wireguard-boringtun:latest
     build:
-      context: ..
+      context: .
       dockerfile: ./Dockerfile
     restart: always
     privileged: true

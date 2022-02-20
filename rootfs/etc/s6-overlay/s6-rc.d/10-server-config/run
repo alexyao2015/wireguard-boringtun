@@ -116,6 +116,15 @@ while true; do
         fi
     fi
 
+    dns="DNS_${i}"
+    dns=${!dns}
+    if [[ -z "${dns}" ]]; then
+        # try getting value from existing config file
+        if [ -f "/config/client_${i}.conf" ]; then
+            dns=$(parse_ini "/config/client_${i}.conf" "Interface" "DNS")
+        fi
+    fi
+
     if [[ value_generated -eq 1 ]]; then
         endpoint="${ENDPOINT}"
         if [[ -z "${endpoint}" ]]; then
@@ -130,8 +139,8 @@ while true; do
             echo "[Interface]"
             echo "PrivateKey = ${private_key}"
             echo "Address = ${allowed_ip}"
-            if [[ -n "${DNS}" ]]; then
-                echo "DNS = ${DNS}"
+            if [[ -n "${dns}" ]]; then
+                echo "DNS = ${dns}"
             fi
             echo ""
             echo "[Peer]"

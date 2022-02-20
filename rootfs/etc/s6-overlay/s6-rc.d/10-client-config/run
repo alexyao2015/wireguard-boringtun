@@ -15,10 +15,12 @@ if [[ -f "/etc/wireguard/wg0.conf" ]]; then
 fi
 
 if [[ -z "${ADDRESS}" ]] || [[ -z "${PRIVATE_KEY}" ]] || \
-    [[ -z "${ENDPOINT}" ]] || [[ -z "${ALLOWED_IP}" ]]; then
+    [[ -z "${ENDPOINT}" ]] || [[ -z "${ALLOWED_IP}" ]] || \
+    [[ -z "${PUBLIC_KEY}" ]]; then
     echo "Missing environment variables!" | error
     echo "ADDRESS: ${ADDRESS}, PRIVATE_KEY: ${PRIVATE_KEY}" | error
     echo "ENDPOINT: ${ENDPOINT}, ALLOWED_IP: ${ALLOWED_IP}" | error
+    echo "PUBLIC_KEY: ${PUBLIC_KEY}" | error
     echo "Exiting..." | error
     exit 1
 fi

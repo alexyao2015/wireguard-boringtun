@@ -6,8 +6,9 @@
 # ==============================================================================
 
 # ip, used in wg-quick, is in /sbin and s6 does not have this part of the default PATH
+# Same for resolvconf
 # Since this is only used here, just modify the PATH in this script only
-PATH=/sbin:$PATH
+PATH=/sbin:/usr/sbin:$PATH
 
 echo "Starting wireguard..." | info
 

@@ -20,7 +20,7 @@ The client config qr code will also be shown in the logs.
 - `PRIVATE_KEY`: The private key of the server/client.
 
 #### Client
-- `DNS`: The DNS server to be used for the client.
+- `DNS_x`: The DNS server to be used for the client.
 When used in server mode, this adds a `DNS` entry to the generated client configuration.
 
 #### Server
