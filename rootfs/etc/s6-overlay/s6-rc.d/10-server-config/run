@@ -1,4 +1,4 @@
-#!/command/with-contenv sh
+#!/command/with-contenv bash
 . "/usr/local/bin/logger"
 . "/usr/local/bin/read-ini"
 
@@ -11,14 +11,27 @@ if [[ -f "/etc/wireguard/wg0.conf" ]]; then
   echo "Config detected at /etc/wireguard/wg0.conf" | info
   echo "Using the existing config for configuration" | info
   echo "This ignores all environment variables" | info
+  cp /etc/wireguard/wg0.conf /run/wireguard/wg0.conf
   exit 0
 fi
 
-if [[ -z "${ADDRESS}" ]] || [[ -z "${PRIVATE_KEY}" ]]; then
-    echo "Missing environment variables when in server mode" | error
-    echo "LISTEN_PORT: ${LISTEN_PORT}, ADDRESS: ${ADDRESS}, PRIVATE_KEY: ${PRIVATE_KEY}" | error
+if [[ -z "${ADDRESS}" ]]; then
+    echo "Missing environment variables!" | error
+    echo "LISTEN_PORT: ${LISTEN_PORT}, ADDRESS: ${ADDRESS}" | error
     echo "Exiting..." | error
     exit 1
+fi
+
+if [[ -z "${PRIVATE_KEY}" ]]; then
+    if [[ -f /config/privkey.key ]]; then
+        PRIVATE_KEY=$(cat /config/privkey.key)
+    else
+      echo "PRIVATE_KEY variable is missing!" | warn
+      echo "Generating a new private key..." | warn
+      PRIVATE_KEY=$(wg genkey)
+      echo "Writing the private key to /config/privkey.key" | warn
+      echo "${PRIVATE_KEY}" > /config/privkey.key
+    fi
 fi
 
 {
@@ -26,7 +39,7 @@ fi
   echo "Address = ${ADDRESS}"
   echo "ListenPort = ${LISTEN_PORT}"
   echo "PrivateKey = ${PRIVATE_KEY}"
-} > /tmp/wireguard.conf
+} > /run/wireguard/wg0.conf
 
 
 echo "Adding iptables rules..." | info
@@ -49,35 +62,19 @@ echo -n > /tmp/peers.conf
 # Generate client config and peers for server
 i=1
 while true; do
-    address="ADDRESS_${i}"
-    address=${!address}
-    if [[ -n "${address}" ]]; then
-        break
-    fi
-
-    endpoint="ENDPOINT_${i}"
-    endpoint=${!endpoint}
-    if [[ -n "${endpoint}" ]]; then
-        echo "Endpoint not set for peer ${i}" | error
-        echo "Skipping peer ${i}" | error
-        break
-    fi
-
     allowed_ip="ALLOWED_IP_${i}"
     allowed_ip=${!allowed_ip}
-    if [[ -n "${allowed_ip}" ]]; then
-        echo "Allowed IP not set for peer ${i}" | error
-        echo "Skipping peer ${i}" | error
+    if [[ -z "${allowed_ip}" ]]; then
         break
     fi
 
     value_generated=0
     public_key="PUBLIC_KEY_${i}"
     public_key=${!public_key}
-    if [[ -n "${public_key}" ]]; then
+    if [[ -z "${public_key}" ]]; then
         # try getting key from existing config file
         if [ -f "/config/client_${i}.conf" ]; then
-            private_key=$(read-ini /config/client_${i}.conf "Interface" "PrivateKey")
+            private_key=$(parse_ini /config/client_${i}.conf "Interface" "PrivateKey")
         else
             # generate new public key
             private_key=$(wg genkey)
@@ -88,10 +85,10 @@ while true; do
 
     psk="PRESHARED_KEY_${i}"
     psk=${!psk}
-    if [[ -n "${psk}" ]]; then
+    if [[ -z "${psk}" ]]; then
         # try getting key from existing config file
         if [ -f "/config/client_${i}.conf" ]; then
-            psk=$(read-ini /config/client_${i}.conf "Peer" "PresharedKey")
+            psk=$(parse_ini /config/client_${i}.conf "Peer" "PresharedKey")
         else
             # generate new preshared key
             psk=$(wg genpsk)
@@ -103,11 +100,19 @@ while true; do
     persistent_keepalive=${!persistent_keepalive}
 
     if [[ value_generated -eq 1 ]]; then
+        endpoint="ENDPOINT_${i}"
+        endpoint=${!endpoint}
+        if [[ -z "${endpoint}" ]]; then
+            echo "Endpoint not set for peer ${i}" | warn
+            echo "Using a default ip of 127.0.0.1 for peer ${i}" | warn
+            echo "You will need to change this to the correct ip for your server" | warn
+            endpoint="127.0.0.1"
+        fi
         echo "Generated new key for client ${i}:" | info
         {
             echo "[Interface]"
             echo "PrivateKey = ${private_key}"
-            echo "Address = ${address}"
+            echo "Address = ${allowed_ip}"
             if [[ -n "${DNS}" ]]; then
                 echo "DNS = ${DNS}"
             fi
@@ -120,9 +125,14 @@ while true; do
             echo "AllowedIPs = 0.0.0.0/0, ::/0"
         } > /config/client_${i}.conf
         qrencode -t ansiutf8 -l L < /config/client_${i}.conf
+        if [[ ${VERBOSE} = "true" ]]; then
+          echo "Generated client config for client ${i} is:" | info
+          cat /config/client_${i}.conf
+        fi
     fi
 
     {
+      echo "# Client ${i}"
       echo "[Peer]"
       echo "PublicKey = ${public_key}"
       echo "PresharedKey = ${psk}"
@@ -138,12 +148,12 @@ while true; do
     while true; do
         port_fwd_port="PORT_FORWARD_PORT_${i}_${port_fwd_num}"
         port_fwd_port=${!port_fwd_port}
-        if [[ -n "${port_fwd_port}" ]]; then
+        if [[ -z "${port_fwd_port}" ]]; then
             break
         fi
         port_fwd_mode="PORT_FORWARD_MODE_${i}_${port_fwd_mode}"
         port_fwd_mode=${!port_fwd_mode}
-        if [[ -n "${port_fwd_mode}" ]]; then
+        if [[ -z "${port_fwd_mode}" ]]; then
             echo "Port forward mode not set for PORT_FORWARD_PORT_${i}_${port_fwd_num}" | error
             echo "Skipping port forward" | error
             continue
@@ -154,14 +164,14 @@ while true; do
         fi
         port_fwd_addr="PORT_FORWARD_ADDRESS_${i}_${port_fwd_addr}"
         port_fwd_addr=${!port_fwd_addr}
-        if [[ -n "${port_fwd_addr}" ]]; then
+        if [[ -z "${port_fwd_addr}" ]]; then
             echo "Port forward address not set for PORT_FORWARD_PORT_${i}_${port_fwd_num}" | error
             echo "Skipping port forward" | error
             continue
         fi
         port_fwd_version="PORT_FORWARD_VERSION_${i}_${port_fwd_num}"
         port_fwd_version=${!port_fwd_version}
-        if [[ -n "${port_fwd_version}" ]]; then
+        if [[ -z "${port_fwd_version}" ]]; then
             echo "Port forward version not set for PORT_FORWARD_PORT_${i}_${port_fwd_num}" | error
             echo "Skipping port forward" | error
             continue
@@ -195,12 +205,12 @@ done
   echo "PostUp = ${up_command}"
   echo "PostDown = ${down_command}"
   echo ""
-} >> /tmp/wireguard.conf
+} >> /run/wireguard/wg0.conf
 
-cat /tmp/peers.conf >> /tmp/wireguard.conf
+cat /tmp/peers.conf >> /run/wireguard/wg0.conf
 rm /tmp/peers.conf
 
 if [[ ${VERBOSE} = "true" ]]; then
   echo "Generated configuration is: " | info
-  info < /tmp/wireguard.conf
+  info < /run/wireguard/wg0.conf
 fi

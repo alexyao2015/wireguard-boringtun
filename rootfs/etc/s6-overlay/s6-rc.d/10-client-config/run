@@ -1,6 +1,5 @@
-#!/command/with-contenv sh
+#!/command/with-contenv bash
 . "/usr/local/bin/logger"
-. "/usr/local/bin/read-ini"
 
 if [[ -n "${LISTEN_PORT}" ]]; then
     # server mode
@@ -11,11 +10,12 @@ if [[ -f "/etc/wireguard/wg0.conf" ]]; then
   echo "Config detected at /etc/wireguard/wg0.conf" | info
   echo "Using the existing config for configuration" | info
   echo "This ignores all environment variables" | info
+  cp /etc/wireguard/wg0.conf /run/wireguard/wg0.conf
   exit 0
 fi
 
 if [[ -z "${ADDRESS}" ]] || [[ -z "${PRIVATE_KEY}" ]]; then
-    echo "Missing environment variables when in client mode" | error
+    echo "Missing environment variables!" | error
     echo "ADDRESS: ${ADDRESS}, PRIVATE_KEY: ${PRIVATE_KEY}" | error
     echo "Exiting..." | error
     exit 1
@@ -36,9 +36,9 @@ fi
   fi
   echo "Endpoint = ${ENDPOINT}"
   echo "AllowedIPs = ${ALLOWED_IP}"
-} > /tmp/wireguard.conf
+} > /run/wireguard/wg0.conf
 
 if [[ ${VERBOSE} = "true" ]]; then
   echo "Generated configuration is: " | info
-  info < /tmp/wireguard.conf
+  info < /run/wireguard/wg0.conf
 fi

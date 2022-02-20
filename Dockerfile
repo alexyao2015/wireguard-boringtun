@@ -69,16 +69,32 @@ RUN set -x \
             bash \
             iptables \
             ip6tables \
-            openresolv
+            iproute2 \
+            openresolv \
+            libqrencode
 
 RUN set -x \
-    && mkdir -p /config \
-    && chmod -R 755 /config
+    && mkdir -p \
+          /config \
+          /log \
+          /run/wireguard \
+    && chmod -R 755 \
+          /config \
+          /log \
+    && chmod -R 600 \
+          /run/wireguard \
+    && chown -R nobody:nobody \
+          /log
 
 COPY --from=s6downloader /s6downloader /
 COPY --from=boringtun-builder /boringtun /usr/bin
 COPY --from=wgtools /wgtools/install /
 COPY --from=rootfs /rootfs /
+
+ENV \
+    S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
+    S6_LOGGING_SCRIPT="n10 s1000000 T 1 T" \
+    S6_CMD_WAIT_FOR_SERVICES_MAXTIME=0
 
 ENV \
     WG_QUICK_USERSPACE_IMPLEMENTATION=boringtun \

@@ -4,10 +4,11 @@
 # wireguard
 # Bring up wireguard
 # ==============================================================================
+PATH=/sbin:$PATH
 
 echo "Starting wireguard..." | info
 
 fdmove -c 2 1 \
-  /usr/bin/wg-quick up wg0
+  /bin/wg-quick up /run/wireguard/wg0.conf
 
 wait "$(pidof boringtun)"

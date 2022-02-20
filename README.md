@@ -1,8 +1,5 @@
 # Wireguard with Boringtun
 
-This userspace implementation should only be used if your kernel does not include
-Wireguard modules.
-
 A config can be bind mounted to /etc/wireguard/wg0.conf or
 environment variables can be used for configuration.
 
@@ -36,9 +33,7 @@ variables are not numbered, so you would use `PUBLIC_KEY`.
 - `PUBLIC_KEY_x`: The public key of the peer. (required for client)
 - `PRESHARED_KEY_x`: The preshared key of the peer.
 - `ALLOWED_IP_x`: The allowed IPs of the peer. (required for client)
-
-#### Client
-- `ENDPOINT`: The endpoint of the peer, excluding the port. (required and only client)
+- `ENDPOINT`: The endpoint of the peer, excluding the port. (required for client)
 
 #### Server
 - `PERSISTENT_KEEP_ALIVE_x`: The persistent key alive of the peer. (server only)

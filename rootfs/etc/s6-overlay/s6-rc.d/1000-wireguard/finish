@@ -1,5 +1,5 @@
 #!/command/with-contenv bash
 
-/usr/bin/wg-quick down wg0
+/bin/wg-quick down /run/wireguard/wg0.conf
 
 /run/s6/basedir/bin/halt
