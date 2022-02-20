@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# https://stackoverflow.com/a/23585994
+function parse_ini() {
+    # Arg 1: file path
+    # Arg 2: section
+    # Arg 3: parameter
+    sed -nr "/^\[${2}\]/ { :l /^${3}[ ]*=/ { s/[^=]*=[ ]*//; p; q;}; n; b l;}" "${1}"
+}
+

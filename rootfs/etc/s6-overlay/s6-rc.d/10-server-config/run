@@ -1,6 +1,6 @@
 #!/command/with-contenv bash
 . "/usr/local/bin/logger"
-. "/usr/local/bin/read-ini"
+. "/usr/local/bin/parse-ini"
 
 if [[ -z "${LISTEN_PORT}" ]]; then
     # client mode
@@ -41,6 +41,8 @@ fi
   echo "PrivateKey = ${PRIVATE_KEY}"
 } > /run/wireguard/wg0.conf
 
+server_public_key=$(echo "${PRIVATE_KEY}" | wg pubkey)
+
 
 echo "Adding iptables rules..." | info
 up_command=""
@@ -49,11 +51,11 @@ up_command+="iptables -A FORWARD -o wg0 -j ACCEPT;"
 up_command+="iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE;"
 up_command+="iptables -A INPUT -p udp --dport ${LISTEN_PORT} -j ACCEPT;"
 
-down_command=${up_command/-A/-D}
+down_command=${up_command//-A/-D}
 if [[ "${DISABLE_IP6TABLES}" != "true" ]]; then
   echo "Adding ip6tables rules..." | info
-  up_command+=${up_command/iptables/ip6tables}
-  down_command+=${down_command/iptables/ip6tables}
+  up_command+=${up_command//iptables/ip6tables}
+  down_command+=${down_command//iptables/ip6tables}
 fi
 
 
@@ -74,7 +76,12 @@ while true; do
     if [[ -z "${public_key}" ]]; then
         # try getting key from existing config file
         if [ -f "/config/client_${i}.conf" ]; then
-            private_key=$(parse_ini /config/client_${i}.conf "Interface" "PrivateKey")
+            private_key=$(parse_ini "/config/client_${i}.conf" "Interface" "PrivateKey")
+            if [[ -z "${private_key}" ]]; then
+                echo "The client configuration for client ${i} was found but is missing a private key!" | error
+                echo "Exiting..." | error
+                exit 1
+            fi
         else
             # generate new public key
             private_key=$(wg genkey)
@@ -88,7 +95,11 @@ while true; do
     if [[ -z "${psk}" ]]; then
         # try getting key from existing config file
         if [ -f "/config/client_${i}.conf" ]; then
-            psk=$(parse_ini /config/client_${i}.conf "Peer" "PresharedKey")
+            psk=$(parse_ini "/config/client_${i}.conf" "Peer" "PresharedKey")
+            if [[ -z "${psk}" ]]; then
+                echo "The client config exists but the PresharedKey is missing" | warn
+                echo "Not using a PresharedKey for client ${i}!" | warn
+            fi
         else
             # generate new preshared key
             psk=$(wg genpsk)
@@ -96,18 +107,24 @@ while true; do
         fi
     fi
 
-    persistent_keepalive="PERSISTENT_KEEPALIVE_${i}"
+    persistent_keepalive="PERSISTENT_KEEP_ALIVE_${i}"
     persistent_keepalive=${!persistent_keepalive}
+    if [[ -z "${persistent_keepalive}" ]]; then
+        # try getting value from existing config file
+        if [ -f "/config/client_${i}.conf" ]; then
+            persistent_keepalive=$(parse_ini "/config/client_${i}.conf" "Peer" "PersistentKeepalive")
+        fi
+    fi
 
     if [[ value_generated -eq 1 ]]; then
-        endpoint="ENDPOINT_${i}"
-        endpoint=${!endpoint}
+        endpoint="${ENDPOINT}"
         if [[ -z "${endpoint}" ]]; then
-            echo "Endpoint not set for peer ${i}" | warn
-            echo "Using a default ip of 127.0.0.1 for peer ${i}" | warn
-            echo "You will need to change this to the correct ip for your server" | warn
-            endpoint="127.0.0.1"
+            endpoint="CHANGE_ME"
+            echo "Endpoint not set!" | warn
+            echo "Using a default value of ${endpoint} for peer ${i}'s endpoint!" | warn
+            echo "You will need to change this to the correct address for your server" | warn
         fi
+
         echo "Generated new key for client ${i}:" | info
         {
             echo "[Interface]"
@@ -118,9 +135,12 @@ while true; do
             fi
             echo ""
             echo "[Peer]"
-            echo "PublicKey = ${public_key}"
+            echo "PublicKey = ${server_public_key}"
             echo "PresharedKey = ${psk}"
             echo "Endpoint = ${endpoint}:${LISTEN_PORT}"
+            if [[ -n "${persistent_keepalive}" ]]; then
+                echo "PersistentKeepalive = ${persistent_keepalive}"
+            fi
             # Just hard code the allowed IPs for client configs
             echo "AllowedIPs = 0.0.0.0/0, ::/0"
         } > /config/client_${i}.conf
@@ -132,51 +152,56 @@ while true; do
     fi
 
     {
-      echo "# Client ${i}"
-      echo "[Peer]"
-      echo "PublicKey = ${public_key}"
-      echo "PresharedKey = ${psk}"
-      echo "AllowedIPs = ${allowed_ip}"
-      if [[ -n "${persistent_keepalive}" ]]; then
-        echo "PersistentKeepalive = ${persistent_keepalive}"
-      fi
-      echo ""
+        echo "# Client ${i}"
+        echo "[Peer]"
+        echo "PublicKey = ${public_key}"
+        if [[ -n "${psk}" ]]; then
+            echo "PresharedKey = ${psk}"
+        fi
+        echo "AllowedIPs = ${allowed_ip}"
+        if [[ -n "${persistent_keepalive}" ]]; then
+            echo "PersistentKeepalive = ${persistent_keepalive}"
+        fi
+        echo ""
     } >> /tmp/peers.conf
 
     # Generate port forwarding iptables commands
-    port_fwd_num=1
+    # Start at 0 because we increment it on the first iteration
+    port_fwd_num=0
     while true; do
+        port_fwd_num=$((port_fwd_num + 1))
+
         port_fwd_port="PORT_FORWARD_PORT_${i}_${port_fwd_num}"
         port_fwd_port=${!port_fwd_port}
         if [[ -z "${port_fwd_port}" ]]; then
             break
         fi
-        port_fwd_mode="PORT_FORWARD_MODE_${i}_${port_fwd_mode}"
+        port_fwd_mode="PORT_FORWARD_MODE_${i}_${port_fwd_num}"
         port_fwd_mode=${!port_fwd_mode}
         if [[ -z "${port_fwd_mode}" ]]; then
-            echo "Port forward mode not set for PORT_FORWARD_PORT_${i}_${port_fwd_num}" | error
+            echo "Port forward mode not set for PORT_FORWARD_MODE_${i}_${port_fwd_num}" | error
             echo "Skipping port forward" | error
             continue
-        elif [[ "${port_fwd_mode}" != "tcp" ]] && [[ "${port_fwd_mode}" == "udp" ]]; then
-            echo "Port forward mode must be tcp or udp for PORT_FORWARD_PORT_${i}_${port_fwd_num}" | error
+        elif [[ "${port_fwd_mode}" != "tcp" ]] && [[ "${port_fwd_mode}" != "udp" ]]; then
+            echo "Port forward mode must be tcp or udp for PORT_FORWARD_MODE_${i}_${port_fwd_num}" | error
             echo "Skipping port forward" | error
             continue
         fi
-        port_fwd_addr="PORT_FORWARD_ADDRESS_${i}_${port_fwd_addr}"
+        port_fwd_addr="PORT_FORWARD_ADDRESS_${i}_${port_fwd_num}"
         port_fwd_addr=${!port_fwd_addr}
         if [[ -z "${port_fwd_addr}" ]]; then
-            echo "Port forward address not set for PORT_FORWARD_PORT_${i}_${port_fwd_num}" | error
+            echo "Port forward address not set for PORT_FORWARD_ADDRESS_${i}_${port_fwd_num}" | error
             echo "Skipping port forward" | error
             continue
         fi
         port_fwd_version="PORT_FORWARD_VERSION_${i}_${port_fwd_num}"
         port_fwd_version=${!port_fwd_version}
         if [[ -z "${port_fwd_version}" ]]; then
-            echo "Port forward version not set for PORT_FORWARD_PORT_${i}_${port_fwd_num}" | error
+            echo "Port forward version not set for PORT_FORWARD_VERSION_${i}_${port_fwd_num}" | error
             echo "Skipping port forward" | error
             continue
         elif [[ "${port_fwd_version}" != "4" ]] && [[ "${port_fwd_version}" != "6" ]]; then
-            echo "Port forward version must be 4 or 6 for PORT_FORWARD_PORT_${i}_${port_fwd_num}" | error
+            echo "Port forward version must be 4 or 6 for PORT_FORWARD_VERSION_${i}_${port_fwd_num}" | error
             echo "Skipping port forward" | error
             continue
         fi
@@ -194,8 +219,7 @@ while true; do
         fi
 
         up_command+="${iptables_cmd};"
-        down_command+="${iptables_cmd/-A/-D};"
-        port_fwd_num=$((port_fwd_num + 1))
+        down_command+="${iptables_cmd//-A/-D};"
     done
 
     i=$(( i+1 ))

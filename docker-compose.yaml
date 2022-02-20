@@ -1,0 +1,20 @@
+version: '3.6'
+
+services:
+  wireguard:
+#    image: ghcr.io/alexyao2015/wireguard-boringtun:latest
+    build:
+      context: ..
+      dockerfile: ./Dockerfile
+    restart: always
+    privileged: true
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    volumes:
+      - ./testdata/config:/config
+      - ./testdata/log:/log
+#    entrypoint: /bin/sh -c 'while true; do sleep 1; done'
+    env_file:
+      - ./.env
+    ports:
+      - "59790:59790/udp"

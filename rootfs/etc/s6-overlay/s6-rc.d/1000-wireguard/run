@@ -4,6 +4,9 @@
 # wireguard
 # Bring up wireguard
 # ==============================================================================
+
+# ip, used in wg-quick, is in /sbin and s6 does not have this part of the default PATH
+# Since this is only used here, just modify the PATH in this script only
 PATH=/sbin:$PATH
 
 echo "Starting wireguard..." | info
@@ -11,4 +14,23 @@ echo "Starting wireguard..." | info
 fdmove -c 2 1 \
   /bin/wg-quick up /run/wireguard/wg0.conf
 
-wait "$(pidof boringtun)"
+# Wait until wg show is blank
+wgshow=$(/bin/wg show)
+counter=10000
+until [[ -z "${wgshow}" ]]; do
+  sleep 1
+  wgshow=$(/bin/wg show)
+
+  if [[ "${STATUS}" = "true" ]]; then
+    if [[ "${counter}" -ge 30 ]]; then
+      echo "Wireguard status:" | info
+      echo "${wgshow}" | info
+      counter=0
+    else
+      counter=$((counter+1))
+    fi
+  fi
+
+done
+
+echo "Wireguard crashed! Exiting..." | error

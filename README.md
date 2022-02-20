@@ -12,14 +12,16 @@ The client config qr code will also be shown in the logs.
 
 ### General
 - `DISABLE_IP6TABLES`: Disable IPv6 iptables rules when set to `true`.
-- `VERBOSE`: Enable verbose logging when set to `true`.
+- `VERBOSE`: Enable verbose logging when set to `true`. This dumps generated configs to stdout.
+- `STATUS`: Enable status logging every 30 seconds when set to `true`, using `wg show`.
 
 ### `[Interface]`
 - `ADDRESS`: The address of the client/subnet of the server.
 - `PRIVATE_KEY`: The private key of the server/client.
 
 #### Client
-- `DNS`: The DNS server to be used for the client. (client only)
+- `DNS`: The DNS server to be used for the client.
+When used in server mode, this adds a `DNS` entry to the generated client configuration.
 
 #### Server
 - `LISTEN_PORT`: The port to listen on. (server only)
@@ -32,8 +34,9 @@ variables are not numbered, so you would use `PUBLIC_KEY`.
 
 - `PUBLIC_KEY_x`: The public key of the peer. (required for client)
 - `PRESHARED_KEY_x`: The preshared key of the peer.
-- `ALLOWED_IP_x`: The allowed IPs of the peer. (required for client)
-- `ENDPOINT`: The endpoint of the peer, excluding the port. (required for client)
+- `ALLOWED_IP_x`: The allowed IPs of the peer, required for client and server.
+- `ENDPOINT`: The endpoint of the peer, excluding the port.
+For server, this is used during client config generation. (required for client)
 
 #### Server
 - `PERSISTENT_KEEP_ALIVE_x`: The persistent key alive of the peer. (server only)
