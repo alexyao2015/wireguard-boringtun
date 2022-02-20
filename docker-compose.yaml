@@ -2,18 +2,16 @@ version: '3.6'
 
 services:
   wireguard:
-#    image: ghcr.io/alexyao2015/wireguard-boringtun:latest
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+    image: ghcr.io/alexyao2015/wireguard-boringtun:latest
     restart: always
     privileged: true
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=0
     volumes:
+      # You can also bind mount wg0.conf instead
+      # - ./wg0.conf:/etc/wireguard/wg0.conf
       - ./testdata/config:/config
       - ./testdata/log:/log
-#    entrypoint: /bin/sh -c 'while true; do sleep 1; done'
     env_file:
       - ./.env
     ports:
