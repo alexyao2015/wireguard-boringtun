@@ -76,7 +76,7 @@ RUN set -x \
     && chmod -R 755 /config
 
 COPY --from=s6downloader /s6downloader /
-COPY --from=boringtun /boringtun /usr/bin
+COPY --from=boringtun-builder /boringtun /usr/bin
 COPY --from=wgtools /wgtools/install /
 COPY --from=rootfs /rootfs /
 
