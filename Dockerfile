@@ -1,3 +1,19 @@
+FROM golang:alpine as wg-go-builder
+WORKDIR /wg-go
+
+RUN set -x \
+    && apk add \
+        build-base \
+        git \
+    && git clone https://git.zx2c4.com/wireguard-go . \
+    && git fetch --tags \
+    && latestTag=$(git describe --tags `git rev-list --tags --max-count=1`) \
+    && git checkout $latestTag
+
+RUN set -x \
+    && make PREFIX="/install" DESTDIR="/wg-go" install \
+    && mv /wg-go/install/bin/wireguard-go .
+
 ##################
 # Boringtun
 ##################
@@ -77,8 +93,7 @@ RUN set -x \
             ip6tables \
             iproute2 \
             openresolv \
-            libqrencode \
-            libmnl
+            libqrencode
 
 RUN set -x \
     && mkdir -p \
@@ -94,7 +109,8 @@ RUN set -x \
           /log
 
 COPY --from=s6downloader /s6downloader /
-COPY --from=boringtun-builder /boringtun /usr/bin
+# COPY --from=boringtun-builder /boringtun /usr/bin
+COPY --from=wg-go-builder /wg-go/wireguard-go /usr/bin
 COPY --from=wgtools /wgtools/install /
 COPY --from=rootfs /rootfs /
 
@@ -103,8 +119,8 @@ ENV \
     S6_LOGGING_SCRIPT="n10 s1000000 T 1 T" \
     S6_CMD_WAIT_FOR_SERVICES_MAXTIME=0
 
-ENV \
-    WG_QUICK_USERSPACE_IMPLEMENTATION=boringtun \
-    WG_SUDO=1
+# ENV \
+#     WG_QUICK_USERSPACE_IMPLEMENTATION=boringtun \
+#     WG_SUDO=1
 
 ENTRYPOINT ["/init"]
