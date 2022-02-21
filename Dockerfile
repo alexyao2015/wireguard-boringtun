@@ -1,3 +1,6 @@
+##################
+# Boringtun
+##################
 FROM rust:alpine as boringtun-builder
 WORKDIR /buildtmp
 
@@ -42,7 +45,10 @@ RUN set -x \
         build-base \
         git \
         libmnl-dev \
-    && git clone https://git.zx2c4.com/wireguard-tools.git .
+    && git clone https://git.zx2c4.com/wireguard-tools.git . \
+    && git fetch --tags \
+    && latestTag=$(git describe --tags `git rev-list --tags --max-count=1`) \
+    && git checkout $latestTag
 
 WORKDIR /wgtools/src
 
@@ -71,7 +77,8 @@ RUN set -x \
             ip6tables \
             iproute2 \
             openresolv \
-            libqrencode
+            libqrencode \
+            libmnl
 
 RUN set -x \
     && mkdir -p \
