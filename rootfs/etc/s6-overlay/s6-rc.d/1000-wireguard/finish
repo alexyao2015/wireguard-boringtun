@@ -1,4 +1,5 @@
 #!/command/with-contenv bash
+PATH=/sbin:/usr/sbin:$PATH
 
 /bin/wg-quick down /run/wireguard/wg0.conf
 

@@ -45,3 +45,8 @@ For server, this is used during client config generation. (required for client)
 - `PORT_FORWARD_ADDRESS_x_y`: The address to forward to the peer. (server only)
 - `PORT_FORWARD_VERSION_x_y`: The protocol version of the address to forward, `4` or `6`. (server only)
 
+
+# TODO
+
+- Replace environment variable config with yaml config syntax using simple go program
+  - Keep environment variable syntax as well?
