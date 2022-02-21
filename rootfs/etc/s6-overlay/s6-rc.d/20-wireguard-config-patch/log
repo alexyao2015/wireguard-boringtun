@@ -1,0 +1,4 @@
+#!/command/with-contenv sh
+program_name="fix-permissions"
+
+s6-format-filter "%1 %s" "[${program_name}]"
