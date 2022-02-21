@@ -6,7 +6,11 @@ services:
     restart: always
     privileged: true
     sysctls:
+      # You may need to uncomment all or some of these
+      # - net.ipv4.ip_forward=1
       - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv6.conf.all.forwarding=1
+      # - net.ipv6.conf.default.forwarding=1
     volumes:
       # You can also bind mount wg0.conf instead
       # - ./wg0.conf:/etc/wireguard/wg0.conf
