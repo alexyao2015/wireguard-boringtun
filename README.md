@@ -46,6 +46,10 @@ For server, this is used during client config generation. (required for client)
 - `PORT_FORWARD_VERSION_x_y`: The protocol version of the address to forward, `4` or `6`. (server only)
 
 
+# Note
+
+When forwarding ports to the client, you must also ensure the ports are forwarded within docker as well.
+
 # TODO
 
 - Replace environment variable config with yaml config syntax using simple go program
