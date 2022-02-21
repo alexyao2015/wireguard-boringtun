@@ -15,8 +15,6 @@ echo "Starting wireguard..." | info
 fdmove -c 2 1 \
   /bin/wg-quick up /run/wireguard/wg0.conf
 
-sleep infinity
-
 # Wait until wg show is blank
 wgshow=$(/bin/wg show)
 counter=10000
