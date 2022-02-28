@@ -1,6 +1,12 @@
 FROM golang:1.17-alpine as generator-builder
 WORKDIR /generator
 
+COPY generator/src/go.mod generator/src/go.sum .
+
+RUN set -x \
+    && ago mod download \
+    && go mod verify
+
 COPY generator/src .
 
 RUN set -x \
