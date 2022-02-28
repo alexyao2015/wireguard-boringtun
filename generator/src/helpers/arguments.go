@@ -14,10 +14,12 @@ var (
 	Clients_dir      = flag.String("clients-dir", "clients", "Location of clients directory relative to config dir.")
 	Wireguard_config = flag.String("wireguard-config", "wg0.conf", "Name of wireguard config file.")
 	Server_key       = flag.String("server-key", "server.key", "Name of server key file.")
+	Config_file      = flag.String("config-file", "", "Name of config file.")
 )
 
 var (
 	Config_path           string
+	Config_file_path      string
 	Clients_path          string
 	Server_key_path       string
 	Wireguard_config_path string
@@ -35,6 +37,7 @@ func Main() {
 	log.Info("Server key: ", *Server_key)
 
 	Config_path = *Config_dir
+	Config_file_path = filepath.Join(Config_path, *Config_file)
 	Clients_path = filepath.Join(Config_path, *Clients_dir)
 	Server_key_path = filepath.Join(Config_path, *Server_key)
 	Wireguard_config_path = filepath.Join(Config_path, *Wireguard_config)

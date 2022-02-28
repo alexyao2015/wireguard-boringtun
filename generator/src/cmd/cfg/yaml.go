@@ -12,10 +12,10 @@ func fetchYaml() UserConfig {
 	user_config := UserConfig{}
 	data, _ := helpers.WrapError(
 		func() ([]byte, error) {
-			return os.ReadFile(configFile)
+			return os.ReadFile(helpers.Config_file_path)
 		},
 		true,
-		configFile,
+		helpers.Config_file_path,
 	)
 
 	_, _ = helpers.WrapError(
@@ -24,7 +24,7 @@ func fetchYaml() UserConfig {
 			return nil, err
 		},
 		true,
-		configFile,
+		helpers.Config_file_path,
 	)
 	return user_config
 }
