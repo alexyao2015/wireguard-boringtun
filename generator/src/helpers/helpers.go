@@ -10,7 +10,7 @@ import (
 func WrapError(f func() ([]byte, error), fatal bool, filename string) ([]byte, error) {
 	data, err := f()
 	if err != nil {
-		log.Error("Error reading %s!", filename)
+		log.Error("Error reading ", filename)
 		if fatal {
 			log.WithField("err", err).Error("Cannot continue")
 			log.Fatal("Exiting...")

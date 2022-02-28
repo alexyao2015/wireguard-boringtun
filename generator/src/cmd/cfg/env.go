@@ -31,7 +31,7 @@ func fetchEnv() UserConfig {
 			if allowed_ip == "" {
 				break
 			}
-			client_name := fmt.Sprintf("CLIENT_%d", i)
+			client_name := fmt.Sprintf("client_%d", i)
 			dns := os.Getenv(fmt.Sprintf("DNS_%d", i))
 			public_key := os.Getenv(fmt.Sprintf("PUBLIC_KEY_%d", i))
 			preshared_key := os.Getenv(fmt.Sprintf("PRESHARED_KEY_%d", i))

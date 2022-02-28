@@ -29,9 +29,8 @@ func fromClientConf(cfg *UserConfig) {
 			continue
 		}
 		client_name := strings.TrimSuffix(item.Name(), ".conf")
-		client_name_upper := strings.ToUpper(client_name)
 		log.Info("Found client config: " + client_name)
-		_, exists := cfg.SERVER.CLIENTS[client_name_upper]
+		_, exists := cfg.SERVER.CLIENTS[client_name]
 		if !exists {
 			log.Warn("Client config not found in server config! Skipping...")
 			continue
@@ -48,9 +47,9 @@ func fromClientConf(cfg *UserConfig) {
 			continue
 		} else {
 			log.Info("Found private key for client: " + client_name)
-			client_config := cfg.SERVER.CLIENTS[client_name_upper]
+			client_config := cfg.SERVER.CLIENTS[client_name]
 			client_config.PRIVATE_KEY = private_key
-			cfg.SERVER.CLIENTS[client_name_upper] = client_config
+			cfg.SERVER.CLIENTS[client_name] = client_config
 		}
 	}
 }

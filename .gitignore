@@ -2,6 +2,7 @@
 test
 
 # Generator
-generator/config.yaml
-generator/clients
-generator/wg0.conf
+generator/src/config.yaml
+generator/src/clients
+generator/src/wg0.conf
+generator/src/server.key
