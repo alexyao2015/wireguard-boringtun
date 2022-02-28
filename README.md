@@ -3,6 +3,11 @@
 A config can be bind mounted to /etc/wireguard/wg0.conf or
 environment variables can be used for configuration.
 
+# yaml
+
+A yaml config file can be used to generate a wireguard file. Use `.client.yaml` and `.server.yaml`
+for an example of the configurable variables.
+
 ## Environment Variables
 
 Server mode is enabled if LISTEN_PORT is defined.
@@ -42,8 +47,6 @@ For server, this is used during client config generation. (required for client)
 - `PERSISTENT_KEEP_ALIVE_x`: The persistent key alive of the peer. (server only)
 - `PORT_FORWARD_PORT_x_y`: The port to forward to the peer. (server only)
 - `PORT_FORWARD_MODE_x_y`: The protocol to forward for the peer, `tcp` or `udp`. (server only)
-- `PORT_FORWARD_ADDRESS_x_y`: The address to forward to the peer. (server only)
-- `PORT_FORWARD_VERSION_x_y`: The protocol version of the address to forward, `4` or `6`. (server only)
 
 
 # Note

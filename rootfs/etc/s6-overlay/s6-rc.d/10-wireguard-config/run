@@ -7,6 +7,14 @@ if [[ -f "/etc/wireguard/wg0.conf" ]]; then
   echo "Using the existing config for configuration" | info
   echo "This ignores all environment variables" | info
   cp /etc/wireguard/wg0.conf /run/wireguard/wg0.conf
+else
+  /usr/bin/generator --config-dir /config
+  status=$?
+  if [[ $status -ne 0 ]]; then
+    echo "Generator failed with status $status" | error
+    exit $status
+  fi
+  cp /config/wg0.conf /run/wireguard/wg0.conf
 fi
 
 # This is so wg-quick doesn't complain about incorrect permissions

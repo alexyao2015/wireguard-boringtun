@@ -2,6 +2,7 @@ FROM golang:1.17-alpine as generator-builder
 WORKDIR /generator
 
 COPY generator/src .
+
 RUN set -x \
     && go build -o generator
 

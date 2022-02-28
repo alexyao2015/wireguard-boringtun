@@ -1,1 +1,0 @@
-pipeline -w { /etc/s6-overlay/s6-rc.d/20-wireguard-config-patch/log } /etc/s6-overlay/s6-rc.d/20-wireguard-config-patch/run

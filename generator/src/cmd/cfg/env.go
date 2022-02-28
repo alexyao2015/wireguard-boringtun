@@ -14,6 +14,8 @@ func fetchEnv() UserConfig {
 	user_config.STATUS = os.Getenv("STATUS") == "true"
 	user_config.ADDRESS = os.Getenv("ADDRESS")
 
+	endpoint := os.Getenv("ENDPOINT")
+
 	listen_port := os.Getenv("LISTEN_PORT")
 	if listen_port != "" {
 		// running in server mode
@@ -66,6 +68,7 @@ func fetchEnv() UserConfig {
 				PRESHARED_KEY:         preshared_key,
 				PERSISTENT_KEEP_ALIVE: persistent_keep_alive_int,
 				PORT_FORWARD:          port_fwds,
+				ENDPOINT:              endpoint,
 			}
 			user_config.SERVER.CLIENTS[client_name] = client
 		}

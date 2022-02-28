@@ -16,7 +16,7 @@ server:
       allowed_ip: 10.100.100.2/32,fd10:10:10::2/128
       persistent_keep_alive: 25
       dns: 1.1.1.1
-      endpoint: myendpoint
+      # endpoint: myendpoint
       port_forward:
         - port: 6000
           mode: udp

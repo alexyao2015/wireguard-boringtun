@@ -6,6 +6,7 @@ import (
 
 	"github.com/alexyao2015/wireguard-boringtun/cmd/cfg"
 	"github.com/alexyao2015/wireguard-boringtun/resources"
+	log "github.com/sirupsen/logrus"
 )
 
 var server, _ = resources.EmbedFS.ReadFile("server.conf")
@@ -122,14 +123,24 @@ func genServerClients(userCfg cfg.UserConfig) map[string]string {
 			continue
 		}
 
+		// set a default endpoint if not set
+		endpoint := client_cfg.ENDPOINT
+		if endpoint == "" {
+			endpoint = "REPLACE_ME"
+			log.Warn("No endpoint specified for client: ", name)
+			log.Warn("Using a placeholder endpoint of: ", endpoint)
+		}
+
 		// set a default allowed_ip for the config if it doesn't exist
 		allowed_ip := client_cfg.ALLOWED_IP_CONFIG
 		if allowed_ip == "" {
+			log.Warn("No ALLOWED_IP_CONFIG specified for client: ", name)
 			if strings.Contains(client_cfg.ALLOWED_IP, ":") {
 				allowed_ip = "0.0.0.0/0, ::/0"
 			} else {
 				allowed_ip = "0.0.0.0/0"
 			}
+			log.Warn("Using a placeholder ALLOWED_IP_CONFIG of: ", allowed_ip)
 		}
 		// for the client config, the server side allowed ip becomes the client side address
 		str_cfg := clientConfigBackend(client_cfg, client_cfg.ALLOWED_IP, allowed_ip)

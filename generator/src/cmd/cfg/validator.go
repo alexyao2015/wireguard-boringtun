@@ -33,7 +33,7 @@ func validateCfg(cfg UserConfig) bool {
 	var errors []error
 	if is_client {
 		log.Debug("Running in client mode")
-		errors = append(errors, validate.Struct(cfg.CLIENT))
+		errors = append(errors, validate.StructExcept(cfg, "SERVER"))
 	} else {
 		log.Debug("Running in server mode")
 
@@ -49,7 +49,7 @@ func validateCfg(cfg UserConfig) bool {
 			os.WriteFile("server.key", []byte(cfg.SERVER.PRIVATE_KEY), 0744)
 		}
 
-		errors = append(errors, validate.Struct(cfg.SERVER))
+		errors = append(errors, validate.StructExcept(cfg, "CLIENT"))
 		if !(len(cfg.SERVER.CLIENTS) > 0) {
 			log.Fatal("When in server mode, clients must be greater than 0!")
 		}
@@ -80,7 +80,8 @@ func validateCfg(cfg UserConfig) bool {
 				cfg.SERVER.CLIENTS[name] = client
 			}
 
-			errors = append(errors, validate.Struct(client))
+			// Endpoint is not required for server mode
+			errors = append(errors, validate.StructExcept(client, "ENDPOINT"))
 
 			// if port forwards are listed, validate them as well
 			if len(client.PORT_FORWARD) > 0 {
