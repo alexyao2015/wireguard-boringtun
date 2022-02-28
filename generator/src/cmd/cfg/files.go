@@ -70,12 +70,15 @@ func fromServerKey(cfg *UserConfig) {
 	if _, err := os.Stat(helpers.Server_key_path); os.IsNotExist(err) {
 		return
 	}
+	log.Info("Found server key file at ", helpers.Server_key_path)
 	if cfg.SERVER.PRIVATE_KEY != "" {
+		log.Warn("Server key already set, skipping...")
 		return
 	}
 	data, err := os.ReadFile(helpers.Server_key_path)
 	if err != nil {
 		log.WithField("Error", err).Fatal(fmt.Sprintf("Error reading %s file!", *helpers.Server_key))
 	}
+	log.Info("Setting server key from file")
 	cfg.SERVER.PRIVATE_KEY = string(data)
 }
