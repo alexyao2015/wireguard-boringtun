@@ -1,0 +1,35 @@
+verbose: true
+status: true
+address: 10.100.100.1/24,fd10:10:10::1/64
+# client:
+#   endpoint: myendpoint
+#   allowed_ip: 0.0.0.0/0
+#   dns: 1.1.1.1
+#   public_key: mypublickey
+#   preshared_key: mypresharedkey
+#   private_key: myprivatekey
+server:
+  listen_port: 59790
+  private_key: my private key
+  clients:
+    client_1:
+      allowed_ip: 10.100.100.2/32,fd10:10:10::2/128
+      persistent_keep_alive: 25
+      dns: 1.1.1.1
+      endpoint: myendpoint
+      port_forward:
+        - port: 6000
+          mode: udp
+        - port: 6000
+          mode: tcp
+    client_2:
+      allowed_ip: 10.100.100.3/32,fd10:10:10::3/128
+      dns: 1.1.1.1
+      endpoint: myendpoint
+      persistent_keep_alive: 25
+    client_3:
+      allowed_ip: 10.100.100.4/32,fd10:10:10::4/128
+      endpoint: myendpoint
+      persistent_keep_alive: 25
+      public_key: "my existing public key"
+      preshared_key: "my existing psk"

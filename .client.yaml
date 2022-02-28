@@ -1,0 +1,10 @@
+verbose: true
+status: true
+address: 10.100.100.1/24,fd10:10:10::1/64
+client:
+  endpoint: myendpoint
+  allowed_ip: 0.0.0.0/0
+  dns: 1.1.1.1
+  public_key: mypublickey
+  preshared_key: mypresharedkey
+  private_key: myprivatekey

@@ -1,0 +1,17 @@
+ipv4:
+  default:
+    - iptables -${add_remove} FORWARD -i wg0 -j ACCEPT
+    - iptables -${add_remove} FORWARD -o wg0 -j ACCEPT
+    - iptables -t nat -${add_remove} POSTROUTING -o eth0 -j MASQUERADE
+    - iptables -${add_remove} INPUT -p udp --dport ${listen_port} -j ACCEPT
+  port_forward:
+    - iptables -t nat -${add_remove} PREROUTING -i eth0 -p ${protocol} --dport ${port_number} -j DNAT --to-destination ${address}
+
+ipv6:
+  default:
+    - ip6tables -${add_remove} FORWARD -i wg0 -j ACCEPT
+    - ip6tables -${add_remove} FORWARD -o wg0 -j ACCEPT
+    - ip6tables -t nat -${add_remove} POSTROUTING -o eth0 -j MASQUERADE
+    - ip6tables -${add_remove} INPUT -p udp --dport ${listen_port} -j ACCEPT
+  port_forward:
+    - ip6tables -t nat -${add_remove} PREROUTING -i eth0 -p ${protocol} --dport ${port_number} -j DNAT --to-destination ${address}

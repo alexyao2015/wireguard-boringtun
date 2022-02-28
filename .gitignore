@@ -1,2 +1,7 @@
 .idea
 test
+
+# Generator
+generator/config.yaml
+generator/clients
+generator/wg0.conf

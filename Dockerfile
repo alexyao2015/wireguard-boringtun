@@ -1,3 +1,10 @@
+FROM golang:1.17-alpine as generator-builder
+WORKDIR /generator
+
+COPY generator/src .
+RUN set -x \
+    && go build -o generator
+
 FROM golang:alpine as wg-go-builder
 WORKDIR /wg-go
 
@@ -112,6 +119,7 @@ COPY --from=s6downloader /s6downloader /
 COPY --from=boringtun-builder /boringtun /usr/bin
 # COPY --from=wg-go-builder /wg-go/wireguard-go /usr/bin
 COPY --from=wgtools /wgtools/install /
+COPY --from=generator-builder /generator/generator /usr/bin
 COPY --from=rootfs /rootfs /
 
 ENV \
