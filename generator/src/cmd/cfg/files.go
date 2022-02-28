@@ -42,25 +42,27 @@ func fromClientConf(cfg *UserConfig) {
 			continue
 		}
 
-		client_config := cfg.SERVER.CLIENTS[client_name]
 		private_key := ini_cfg.Section("Interface").Key("PrivateKey").String()
 		if private_key == "" {
 			log.Warn("Client config has no private key! Skipping...")
 			continue
 		} else {
 			log.Info("Found private key for client: " + client_name)
+			client_config := cfg.SERVER.CLIENTS[client_name]
 			client_config.PRIVATE_KEY = private_key
+			cfg.SERVER.CLIENTS[client_name] = client_config
 		}
 
-		psk := ini_cfg.Section("Interface").Key("PresharedKey").String()
+		psk := ini_cfg.Section("Peer").Key("PresharedKey").String()
 		if psk == "" {
 			log.Warn("Client config has no preshared key. Skipping...")
 			continue
 		} else {
 			log.Info("Found preshared key for client: " + client_name)
+			client_config := cfg.SERVER.CLIENTS[client_name]
 			client_config.PRESHARED_KEY = psk
+			cfg.SERVER.CLIENTS[client_name] = client_config
 		}
-		cfg.SERVER.CLIENTS[client_name] = client_config
 	}
 }
 
