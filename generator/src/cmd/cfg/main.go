@@ -26,6 +26,6 @@ func ParseUser() (UserConfig, bool) {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	is_client := validateCfg(user_config)
+	is_client := validateCfg(&user_config)
 	return user_config, is_client
 }

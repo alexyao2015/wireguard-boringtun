@@ -29,7 +29,7 @@ func RunCmd(stdin string, prg string, args ...string) (string, error) {
 }
 
 func DryRunWrapper(f func() error) error {
-	if *DryRun {
+	if *Dry_run {
 		log.Info("Dry run, not executing")
 		return nil
 	}

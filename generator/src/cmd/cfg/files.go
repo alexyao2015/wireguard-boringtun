@@ -3,8 +3,10 @@ package cfg
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
+	"github.com/alexyao2015/wireguard-boringtun/helpers"
 	log "github.com/sirupsen/logrus"
 
 	ini "gopkg.in/ini.v1"
@@ -12,10 +14,10 @@ import (
 
 // parse private key from clients folder
 func fromClientConf(cfg *UserConfig) {
-	if _, err := os.Stat("clients"); os.IsNotExist(err) {
+	if _, err := os.Stat(helpers.Clients_path); os.IsNotExist(err) {
 		return
 	}
-	dirListings, err := os.ReadDir("clients")
+	dirListings, err := os.ReadDir(helpers.Clients_path)
 	if err != nil {
 		log.WithField("Error", err).Fatal("Error reading clients directory!")
 	}
@@ -27,13 +29,15 @@ func fromClientConf(cfg *UserConfig) {
 			continue
 		}
 		client_name := strings.TrimSuffix(item.Name(), ".conf")
-		log.Debug("Found client config: " + client_name)
-		_, exists := cfg.SERVER.CLIENTS[client_name]
+		client_name_upper := strings.ToUpper(client_name)
+		log.Info("Found client config: " + client_name)
+		_, exists := cfg.SERVER.CLIENTS[client_name_upper]
 		if !exists {
 			log.Warn("Client config not found in server config! Skipping...")
 			continue
 		}
-		ini_cfg, err := ini.Load("clients/" + item.Name())
+		item_path := filepath.Join(helpers.Clients_path, item.Name())
+		ini_cfg, err := ini.Load(item_path)
 		if err != nil {
 			log.WithField("Error", err).Fatal(fmt.Sprintf("Error reading client config: %s", item.Name()))
 			continue
@@ -43,24 +47,24 @@ func fromClientConf(cfg *UserConfig) {
 			log.Warn("Client config has no private key! Skipping...")
 			continue
 		} else {
-			log.Debug("Found private key for client: " + client_name)
-			client_config := cfg.SERVER.CLIENTS[client_name]
+			log.Info("Found private key for client: " + client_name)
+			client_config := cfg.SERVER.CLIENTS[client_name_upper]
 			client_config.PRIVATE_KEY = private_key
-			cfg.SERVER.CLIENTS[client_name] = client_config
+			cfg.SERVER.CLIENTS[client_name_upper] = client_config
 		}
 	}
 }
 
 func fromServerKey(cfg *UserConfig) {
-	if _, err := os.Stat("server.key"); os.IsNotExist(err) {
+	if _, err := os.Stat(helpers.Server_key_path); os.IsNotExist(err) {
 		return
 	}
 	if cfg.SERVER.PRIVATE_KEY != "" {
 		return
 	}
-	data, err := os.ReadFile("server.key")
+	data, err := os.ReadFile(helpers.Server_key_path)
 	if err != nil {
-		log.WithField("Error", err).Fatal("Error reading server.key file!")
+		log.WithField("Error", err).Fatal(fmt.Sprintf("Error reading %s file!", *helpers.Server_key))
 	}
 	cfg.SERVER.PRIVATE_KEY = string(data)
 }

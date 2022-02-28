@@ -3,6 +3,7 @@ package cfg
 import (
 	"os"
 
+	"github.com/alexyao2015/wireguard-boringtun/helpers"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-playground/validator/v10/non-standard/validators"
 	log "github.com/sirupsen/logrus"
@@ -17,7 +18,7 @@ func init() {
 
 // validates and fills in defaults for the user config
 // Creates private and public keys for clients if not defined
-func validateCfg(cfg UserConfig) bool {
+func validateCfg(cfg *UserConfig) bool {
 	var is_client = cfg.CLIENT.PRIVATE_KEY != ""
 	var is_server = cfg.SERVER.LISTEN_PORT != 0
 
@@ -44,9 +45,13 @@ func validateCfg(cfg UserConfig) bool {
 			if err != nil {
 				log.WithField("Error", err).Fatal("Error generating private key!")
 			}
-			cfg.SERVER.PRIVATE_KEY = string(private_key[:])
-			log.Info("Saving server private key to server.key")
-			os.WriteFile("server.key", []byte(cfg.SERVER.PRIVATE_KEY), 0744)
+			cfg.SERVER.PRIVATE_KEY = private_key.String()
+			log.Info("Saving server private key to ", helpers.Server_key_path)
+
+			helpers.DryRunWrapper(func() error {
+				return os.WriteFile(helpers.Server_key_path, []byte(cfg.SERVER.PRIVATE_KEY), 0744)
+			})
+
 		}
 
 		errors = append(errors, validate.StructExcept(cfg, "CLIENT"))
@@ -71,7 +76,7 @@ func validateCfg(cfg UserConfig) bool {
 					client.PRESHARED_KEY = string(psk.String())
 					client.GENERATED = true
 				}
-				log.Debug("Generating public key for ", name)
+				log.Info("Generating public key for ", name)
 				key, err := wgtypes.ParseKey(client.PRIVATE_KEY)
 				if err != nil {
 					log.WithField("Error", err).Fatal("Error parsing private key!")

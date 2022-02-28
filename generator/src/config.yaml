@@ -10,7 +10,7 @@ address: 10.100.100.1/24,fd10:10:10::1/64
 #   private_key: myprivatekey
 server:
   listen_port: 59790
-  private_key: my private key
+  # private_key: my private key
   clients:
     client_1:
       allowed_ip: 10.100.100.2/32,fd10:10:10::2/128

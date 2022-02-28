@@ -43,6 +43,8 @@ func genServer(userCfg cfg.UserConfig) string {
 			addr = strings.TrimSpace(addr)
 
 			is_ipv6 := strings.Contains(addr, ":")
+			addr_split := strings.Split(addr, "/")
+			addr = addr_split[0]
 			for _, port_fwd := range client.PORT_FORWARD {
 				var new_rules string
 				if is_ipv6 {
@@ -123,6 +125,7 @@ func genServerClients(userCfg cfg.UserConfig) map[string]string {
 			continue
 		}
 
+		name = strings.ToLower(name)
 		// set a default endpoint if not set
 		endpoint := client_cfg.ENDPOINT
 		if endpoint == "" {

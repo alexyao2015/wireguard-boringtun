@@ -1,6 +1,5 @@
 #!/command/with-contenv sh
 . "/usr/local/bin/logger"
-program_name="wireguard-config-patch"
 
 if [[ -f "/etc/wireguard/wg0.conf" ]]; then
   echo "Config detected at /etc/wireguard/wg0.conf" | info
@@ -18,5 +17,5 @@ else
 fi
 
 # This is so wg-quick doesn't complain about incorrect permissions
-echo "Setting permissions of /run/wireguard/wg0.conf..." | info "[${program_name}] "
+echo "Setting permissions of /run/wireguard/wg0.conf..."
 chmod 600 /run/wireguard/wg0.conf
