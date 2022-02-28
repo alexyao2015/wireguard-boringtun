@@ -10,7 +10,7 @@ RUN set -x \
 COPY generator/src .
 
 RUN set -x \
-    && go build -o generator
+    && go build -ldflags "-s" -o generator
 
 FROM golang:alpine as wg-go-builder
 WORKDIR /wg-go
