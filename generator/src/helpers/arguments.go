@@ -14,7 +14,7 @@ var (
 	Clients_dir      = flag.String("clients-dir", "clients", "Location of clients directory relative to config dir.")
 	Wireguard_config = flag.String("wireguard-config", "wg0.conf", "Name of wireguard config file.")
 	Server_key       = flag.String("server-key", "server.key", "Name of server key file.")
-	Config_file      = flag.String("config-file", "", "Name of config file.")
+	Config_file      = flag.String("config-file", "config.yaml", "Name of config file.")
 )
 
 var (
