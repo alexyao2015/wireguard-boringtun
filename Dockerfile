@@ -42,7 +42,7 @@ RUN set -x \
         build-base \
         git \
     && git clone https://github.com/cloudflare/boringtun.git . \
-    && git checkout -f BORINGTUN_VERSION
+    && git checkout -f ${BORINGTUN_VERSION}
 
 RUN set -x \
     && cargo build --bin boringtun --target x86_64-unknown-linux-musl --release \
