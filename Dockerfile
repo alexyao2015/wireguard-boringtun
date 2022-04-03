@@ -1,3 +1,5 @@
+ARG BORINGTUN_VERSION=28e0df8263c3f174b23b9df5f6b246c00d4dd878
+
 FROM golang:1.17-alpine as generator-builder
 WORKDIR /generator
 
@@ -32,13 +34,15 @@ RUN set -x \
 # Boringtun
 ##################
 FROM rust:alpine as boringtun-builder
+ARG BORINGTUN_VERSION
 WORKDIR /buildtmp
 
 RUN set -x \
     && apk add \
         build-base \
         git \
-    && git clone https://github.com/cloudflare/boringtun.git .
+    && git clone https://github.com/cloudflare/boringtun.git . \
+    && git checkout -f BORINGTUN_VERSION
 
 RUN set -x \
     && cargo build --bin boringtun --target x86_64-unknown-linux-musl --release \
