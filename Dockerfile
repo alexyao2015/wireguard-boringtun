@@ -1,4 +1,4 @@
-ARG BORINGTUN_VERSION=28e0df8263c3f174b23b9df5f6b246c00d4dd878
+ARG BORINGTUN_VERSION=v0.4.0
 
 FROM golang:1.17-alpine as generator-builder
 WORKDIR /generator
