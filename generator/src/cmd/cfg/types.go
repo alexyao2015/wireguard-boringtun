@@ -24,8 +24,9 @@ type UserConfig struct {
 	VERBOSE bool
 
 	SERVER struct {
-		LISTEN_PORT uint16             `validate:"notblank"`
-		PRIVATE_KEY string             `validate:"notblank"`
+		LISTEN_PORT uint16 `validate:"notblank"`
+		PRIVATE_KEY string `validate:"notblank"`
+		PUBLIC_KEY  string
 		CLIENTS     map[string]Clients `validate:"gt=0"`
 	}
 

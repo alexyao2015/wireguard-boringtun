@@ -54,6 +54,13 @@ func validateCfg(cfg *UserConfig) bool {
 
 		}
 
+		// obtain the server public key for config generation
+		key, err := wgtypes.ParseKey(cfg.SERVER.PRIVATE_KEY)
+		if err != nil {
+			log.WithField("Error", err).Fatal("Error parsing server private key!")
+		}
+		cfg.SERVER.PUBLIC_KEY = string(key.PublicKey().String())
+
 		errors = append(errors, validate.StructExcept(cfg, "CLIENT"))
 		if !(len(cfg.SERVER.CLIENTS) > 0) {
 			log.Fatal("When in server mode, clients must be greater than 0!")

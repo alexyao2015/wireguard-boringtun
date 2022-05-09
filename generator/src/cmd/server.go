@@ -145,8 +145,7 @@ func genServerClients(userCfg cfg.UserConfig) map[string]string {
 			}
 			log.Warn("Using a placeholder ALLOWED_IP_CONFIG of: ", allowed_ip)
 		}
-		// for the client config, the server side allowed ip becomes the client side address
-		str_cfg := clientConfigBackend(client_cfg, client_cfg.ALLOWED_IP, allowed_ip)
+		str_cfg := clientConfigBackend(client_cfg, allowed_ip, userCfg.SERVER.PUBLIC_KEY)
 		client_configs[name] = str_cfg
 	}
 	return client_configs
