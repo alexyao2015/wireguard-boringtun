@@ -1,4 +1,4 @@
-ARG BORINGTUN_VERSION=08bc5ed19b797d8a741bb4f3bea1d627d8301735
+ARG BORINGTUN_VERSION=42710c904605bf1efe6e1e52fd6f7b16c099e06c
 
 FROM golang:1.17-alpine as generator-builder
 WORKDIR /generator
@@ -45,12 +45,12 @@ RUN set -x \
     && git checkout -f ${BORINGTUN_VERSION}
 
 RUN set -x \
-    && cargo build --bin boringtun-cli --target x86_64-unknown-linux-musl --release \
-    && mv target/x86_64-unknown-linux-musl/release/boringtun-cli build-result
+    && cargo build --bin boringtun --target x86_64-unknown-linux-musl --release \
+    && mv target/x86_64-unknown-linux-musl/release/boringtun .
 
 WORKDIR /boringtun
 
-RUN mv /buildtmp/build-result .
+RUN mv /buildtmp/boringtun .
 
 ###################
 # S6 Overlay
@@ -139,7 +139,7 @@ ENV \
     S6_CMD_WAIT_FOR_SERVICES_MAXTIME=0
 
 ENV \
-    WG_QUICK_USERSPACE_IMPLEMENTATION=boringtun-cli \
+    WG_QUICK_USERSPACE_IMPLEMENTATION=boringtun \
     WG_SUDO=1
 
 ENTRYPOINT ["/init"]
